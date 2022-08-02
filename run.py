@@ -1,6 +1,9 @@
 import random
 
 def add_series():
+    """
+    Allows the user to add a series to the list.
+    """
     inpt = input('\n\
 Please enter the name of the series you would like to add.\n\
       or type "exit" to return to the main menu.\n')
@@ -13,9 +16,23 @@ Please enter the name of the series you would like to add.\n\
         add_series()
 
 def random_series():
-    pass
+    """
+    Randomly selects a series from the list.
+    """
+    with open('series.txt', 'r') as f:
+        series = f.readlines()
+        random_series = random.choice(series)
+        print(f'\nYou should watch "{random_series[:-1]}" next!')
+        quit()
+    
 
 def welcome():
+    """
+    Directs user to desired option.
+    
+    Either add a series to the list 
+    or get a random series in the list.
+    """
     message = input('\
          Welcome to the Series Selector.\n\
  Would you like to ADD a new series to the list or\n\
