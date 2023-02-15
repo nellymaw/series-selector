@@ -1,55 +1,62 @@
-import random
+import PySimpleGUI as sg
+import functions
+import os
 
-def add_series():
-    """
-    Allows the user to add a series to the list.
-    """
-    inpt = input('\n\
-Please enter the name of the series you would like to add.\n\
-      or type "exit" to return to the main menu.\n')
-    if inpt.lower() == 'exit':
-        welcome()
-    else:
-        with open('series.txt', 'a') as f:
-            f.write(inpt + '\n')
-            print(f'\n{inpt} added to the list!\n')
-        add_series()
+sg.theme('Topanga')
 
-def random_series():
-    """
-    Randomly selects a series from the list.
-    """
-    with open('series.txt', 'r') as f:
-        series = f.readlines()
-        random_series = random.choice(series)
-        print(f'\nYou should watch "{random_series[:-1]}" next!')
-        quit()
-    
+RUNNING = True
 
-def welcome():
-    """
-    Directs user to desired option.
-    
-    Either add a series to the list 
-    or get a random series in the list.
-    """
-    message = input('\
-         Welcome to the Series Selector.\n\
- Would you like to ADD a new series to the list or\n\
-would you like to recieve a RANDOM series from the list?\n\
-                    (add/random)\n')
-    while True:
-        if message == 'add':
-            add_series()
-        elif message == 'random':
-            random_series()
-        else:
-            message = input('Please enter either "add" or "random"\n')
-            continue
+if not os.path.exists('series.txt'):
+    with open('series.txt', 'w'):
+        pass
 
-def main():
-    welcome()
+label1 = sg.Text('Series Randomizer', font=('Helvetica', 12))
+input1 = sg.InputText(key='input_series')
+add_button = sg.Button('Add', key='Add_button')
+list_box = sg.Listbox(values=functions.visualize_series(),
+                      key='visualized_series',
+                      enable_events=True,
+                      size=[45, 10])
+edit_button = sg.Button('Edit', key='Edit_button')
+random_button = sg.Button('Randomize', key='Random_button')
+random_result = sg.Text(key='random_result', font=('Helvetica', 16))
 
+layout = [[label1], [input1, add_button], [
+    list_box, edit_button], [random_button, random_result]]
 
-if __name__ == '__main__':
-    main()
+window = sg.Window('Series Randomizer', layout)
+
+while RUNNING:
+    event, values = window.read()
+    print('-----------')
+    print(event)
+    print('-----------')
+    print(values['visualized_series'])
+    match event:
+        case 'Add_button':
+            series = functions.visualize_series()
+            new_series = values['input_series'] + "\n"
+            series.append(new_series)
+            functions.add_series(series)
+            window['visualized_series'].update(values=series)
+            window['input_series'].update(value='')
+        case 'Edit_button':
+            try:
+                series_to_edit = values['visualized_series'][0]
+                overwriting_series = values['input_series']
+                series = functions.visualize_series()
+                index = series.index(series_to_edit)
+                series[index] = overwriting_series+'\n'
+                functions.add_series(series)
+                window['visualized_series'].update(values=series)
+                window['input_series'].update(value='')
+            except IndexError:
+                sg.Popup('Please select an item first.',
+                         font=("Helvetica", 16))
+
+        case 'Random_button':
+            window['random_result'].update(value=functions.random_series())
+        case sg.WIN_CLOSED:
+            break
+
+window.close()
